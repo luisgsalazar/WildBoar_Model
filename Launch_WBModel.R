@@ -1,12 +1,12 @@
 ######################
-#### Wild Boar Model 
-#### Februray 2021
+#### Wild Boar Model Main Launch Panel
+#### February 2021
 #### Luis Salazar and Mathieu Andraud
 ######################
 
 setwd("//splffiler/ueqac/Luis/Model/GIT/WildBoar_Model")
-#Load libraries
 
+#Load libraries
 library("flux")
 
 # Load functions

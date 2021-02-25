@@ -1,57 +1,56 @@
 
-Scenario = 1:2
-par(mfrow = c(2, 1))
-load("habitats_Dep64.RData")
-#load("habitats_EA9.RData")
+Scenario = 1:4
+#par(mfrow = c(2, 1))
+
+#
 library(rgeos)
 library(magrittr)
+library(ggplot2)
 
+OutPutGraph <- NULL
 
-#Surface in km2
-gArea(habitats)/1e6 -> surface
+for (Scen in Scenario) {
+  if(Scenario %in% c(1:2)) load("habitats_Dep64.RData") else
+  load("habitats_EA9.RData")
+  
+  #Surface in km2
+  gArea(habitats)/1e6 -> surface
+  
+  #Load Scenario List Results
+  load(paste0("./Outputs/Scenario_", Scen, "/", Scen, ".RData"))
+  do.call(rbind, res) -> results
+  
+  ### Divide into type of results
+  res_dayout <- results[ ,c("DayOutInfMat", "DayOutPopMat", "DayOutAniMat", "DayOutCarcMat", "DayOutInfAniMat")]
+  res_newinf <- results[ ,c("NewInfAnimals", "NewInfCarcass", "NewInfGroups", "InfectedPerCells")]
+  
+  #To check if Iters are messed up
+  # which(sapply(res, function(x){
+  #   x <- x$NewInfAnimals %>% data.frame
+  #   length(unique(x$Iter)) != 1
+  # }))
+  
+  ### Divide Results
+  apply(res_dayout, 2, identity) -> z
+  Population <- do.call(cbind, z$DayOutAniMat)
+  Infected   <- do.call(cbind, z$DayOutInfMat)
+  carcasses  <- do.call(cbind, z$DayOutCarcMat)
+  
+  apply(res_newinf, 2, function(x) do.call(rbind, x)) -> z
+  InfPerCells <- z$InfectedPerCells
+  
+  ### Calculate Epidemic Duration
+  NewInfAnimals <- lapply(res, function(x){
+    x= x$NewInfAnimals %>% data.frame
+    c(unique(x$Iter), max(x$gTime) - 750)
+  }) %>% do.call(rbind,.)
 
-load(paste0("./Outputs/Scenario_", Scen, "/", Scen, ".RData"))
+ PDensity <- plot(population[ ,1]/surface, typ = "l", main = paste0("Scenario_", Scen), xlab = "Days", ylab = "Wildboar Denisty/ km2", ylim = c(0, 5))
+ apply(population[ ,2:99]/surface, 2, lines , col = rainbow(99))
+  
+   
+}
 
-#To check which iters are messed up
-which(sapply(res, function(x){
-  x <- x$NewInfAnimals %>% data.frame
-  length(unique(x$Iter)) != 1
-}))
-
-
-
-OutPutList <- NULL
-
-for (Scen in Scenario){
-load(paste0("./Outputs/Scenario_", Scen, "/", Scen, ".RData"))
-do.call(rbind, res) -> results
-res_dayout <- results[ ,c("DayOutInfMat", "DayOutPopMat", "DayOutAniMat", "DayOutCarcMat", "DayOutInfAniMat")]
-res_newinf <- results[ ,c("NewInfAnimals", "NewInfCarcass", "NewInfGroups", "InfectedPerCells")]
-#res_opl    <- results[ ,c("OutPutList")]
-
-apply(res_dayout, 2, identity) -> z
-population <- do.call(cbind, z$DayOutAniMat)
-Infected   <- do.call(cbind, z$DayOutInfMat)
-carcasses  <- do.call(cbind, z$DayOutCarcMat)
-
-apply(res_newinf, 2, function(x) do.call(rbind, x)) -> z
-InfPerCells <- z$InfectedPerCells
-
-#To calculate Epidemic Duartion, use time for the last infected animal
-NewInfAnimals <- lapply(res, function(x){
-  x= x$NewInfAnimals %>% data.frame
-  c(unique(x$Iter), max(x$gTime) - 750)
-}) %>% do.call(rbind,.)
-
-tmp <- lapply(res, function(x) x$NewInfAnimals)
-tmp <-  do.call(rbind, tmp)
-dim(tmp)
-tmp <- unique(tmp)
-dim(tmp)
-
-tmp <- as.data.frame(tmp)
-ag <- aggregate(gTime ~ Iter, data = tmp, max)
-ag$EpiDuration = ag$gTime - 750
 
 # plot(population[ ,1]/surface, typ = "l", main = paste0("Scenario_", Scen), xlab = "Days", ylab = "Wildboar Denisty/ km2", ylim = c(0, 5))
 # apply(population[ ,2:99]/surface, 2, lines , col = rainbow(99))
