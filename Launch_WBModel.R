@@ -31,7 +31,7 @@ ProbHarvestAM = Scenarios[Scenarios$Sc == Scen, "ProbHarvestAM"]
 ProbMovHunt   = Scenarios[Scenarios$Sc == Scen, "ProbMovHunt"]
 nbcores       = 34
 
-if(Scen %in%c(3:4)){WBModel(MaxIterations = MaxIterations, 
+if(Scen %in% c(3:4)){WBModel(MaxIterations = MaxIterations, 
                             ProbHarvest   = ProbHarvest,
                             ProbHarvestAM = ProbHarvestAM,
                             ProbMovHunt   = ProbMovHunt,

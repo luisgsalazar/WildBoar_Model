@@ -6,13 +6,17 @@ Scenario = 1:4
 library(rgeos)
 library(magrittr)
 library(ggplot2)
+library(dplyr)
+library(reshape2)
 
 OutPutGraph <- NULL
 
+
+
 for (Scen in Scenario) {
-  if(Scenario %in% c(1:2)) load("habitats_Dep64.RData") else
-  load("habitats_EA9.RData")
-  
+  if(Scenario %in% c(1:2)) load("X:/Luis/Model/GIT/WildBoar_Model/Inputs/habitats_Dep64.RData") else
+  load("X:/Luis/Model/GIT/WildBoar_Model/Inputs/habitats_EA9.RData")
+}
   #Surface in km2
   gArea(habitats)/1e6 -> surface
   
@@ -30,11 +34,24 @@ for (Scen in Scenario) {
   #   length(unique(x$Iter)) != 1
   # }))
   
-  ### Divide Results
+  ### Extract Results from main list
   apply(res_dayout, 2, identity) -> z
-  Population <- do.call(cbind, z$DayOutAniMat)
-  Infected   <- do.call(cbind, z$DayOutInfMat)
-  carcasses  <- do.call(cbind, z$DayOutCarcMat)
+  
+  Population      <- do.call(cbind, z$DayOutAniMat)
+  Population      <- Population %>% data.frame
+  Population$Time <- seq(nrow(Population))
+  Population      <- melt(Population, id = "Time")
+  
+  Infected      <- do.call(cbind, z$DayOutInfMat)
+  Infected      <- Infected %>% data.frame
+  Infected$Time <- seq(nrow(Infected))
+  Infected      <- melt(Infected, id = "Time")
+  
+  Carcasses      <- do.call(cbind, z$DayOutCarcMat)
+  Carcasses      <- Carcasses %>% data.frame
+  Carcasses$Time <- seq(nrow(Carcasses))
+  Carcasses      <- melt(Carcasses, id = "Time")
+  
   
   apply(res_newinf, 2, function(x) do.call(rbind, x)) -> z
   InfPerCells <- z$InfectedPerCells
@@ -45,12 +62,18 @@ for (Scen in Scenario) {
     c(unique(x$Iter), max(x$gTime) - 750)
   }) %>% do.call(rbind,.)
 
- PDensity <- plot(population[ ,1]/surface, typ = "l", main = paste0("Scenario_", Scen), xlab = "Days", ylab = "Wildboar Denisty/ km2", ylim = c(0, 5))
+ PDensity <- ggplot(Population, aes(x = Time, y = )
+                    ggplot(population2, aes(x=time, y=value, color= variable))+
+                        title(main=paste0("Scenario_", Scen)) +
+                       geom_line()
+   
+   population[ ,1]/surface, typ = "l", main = paste0("Scenario_", Scen), xlab = "Days", ylab = "Wildboar Denisty/ km2", ylim = c(0, 5))
  apply(population[ ,2:99]/surface, 2, lines , col = rainbow(99))
   
    
 }
-
+# plot(population[ ,1]/surface, typ = "l", main = paste0("Scenario_", Scen), xlab = "Days", ylab = "Wildboar Denisty/ km2", ylim = c(0, 5))
+# apply(population[ ,2:99]/surface, 2, lines , col = rainbow(99))
 
 # plot(population[ ,1]/surface, typ = "l", main = paste0("Scenario_", Scen), xlab = "Days", ylab = "Wildboar Denisty/ km2", ylim = c(0, 5))
 # apply(population[ ,2:99]/surface, 2, lines , col = rainbow(99))
@@ -73,29 +96,13 @@ apply(Infected[ ,2:99], 2, lines, col = rainbow(99))
 # apply(carcasses[ ,2:99], 2, lines, col = rainbow(99))
 
 OutPutList[[Scen]] <- list(p1, p2)
-}
+
 
 # voir graph 1 scenario 1
 OutPutList[[1]][[1]]
 
 plot_grid(OutPutList[[1]], tags = TRUE)
 
-# tmp <- NULL
-# 
-# for(i in 1:4){
-#   p1 <- qplot(c(1,4), c(2,3))
-#   p2 <- qplot(c(1,2), c(2,3))
-#   tmp[[i]] <- list(p1,p2)
-# }
-# 
-# tmp[[1]][[2]]
-# 
-# 
-# population <- population %>% data.frame
-# population$time <- seq(nrow(population))
-# population2 <- melt(population,id = "time")
-# 
-# 
 # ggplot(population2, aes(x=time, y=value, color= variable))+
 #   title(main=paste0("Scenario_", Scen)) +
 #   geom_line()
