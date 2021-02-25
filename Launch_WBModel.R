@@ -4,13 +4,13 @@
 #### Luis Salazar and Mathieu Andraud
 ######################
 
-setwd("//splffiler/ueqac/Luis/Script_12-02-21/Dep64")
+setwd("//splffiler/ueqac/Luis/Model/GIT/WildBoar_Model")
 #Load libraries
 
 library("flux")
 
 # Load functions
-source(file = "\\\\splffiler/ueqac/Luis/Model/WBModel.R")
+source(file = "//splffiler/ueqac/Luis/Model/GIT/WildBoar_Model/WBModel.R")
 
 # Define Scenarios
 Scenarios <- data.frame(Sc = c(1:4),

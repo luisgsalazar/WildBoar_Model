@@ -74,8 +74,8 @@ WBModel <- function( MaxIterations    = 100,
   
   #Source Initialization (Wild boar matrix) and Animal Processes (Ageing and natural mortality)
   
-  source("//splffiler/ueqac/Luis/Script_12-02-21/Dep64/Initialization.R")
-  source("//splffiler/ueqac/Luis/Script_12-02-21/Dep64/AnimalProcesses.R")
+  source("//splffiler/ueqac/Luis/Model/GIT/Initialization.R")
+  source("//splffiler/ueqac/Luis/Model/GIT/AnimalProcesses.R")
 
 # Raster  and Distance Definition -----------------------------------------
  
