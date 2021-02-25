@@ -1,6 +1,6 @@
 ######################
-#### Wild Bors Model ....
-#### date
+#### Wild Boar Model 
+#### Februray 2021
 #### Luis Salazar and Mathieu Andraud
 ######################
 

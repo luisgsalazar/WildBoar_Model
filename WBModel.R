@@ -498,7 +498,7 @@ WBModel <- function( MaxIterations    = 100,
         table(PopMatWB[ ,2], PopMatWB[ ,3], PopMatWB[ ,4], PopMatWB[ ,12])[ ,1, 2, 1] -> tmp
         as.numeric(names(tmp)[tmp > 0]) -> tmp
         GroupSubAM <- splitGroups[splitGroups %in% tmp]
-        rm(list=c("tmp", "NumbAdultMInG"))
+        rm(list = c("tmp", "NumbAdultMInG"))
         ## Groups that may split must not be group already splitting and have more than 2 adult males
 
           if (gTime == (25*7 + ((Year - 1)*365))) splitIndex = floor(length(GroupSubAM)*1/(5*7))
@@ -683,7 +683,7 @@ WBModel <- function( MaxIterations    = 100,
         InfCarcasses <- PopMatWB[, 9] == 3 & ((gTime - PopMatWB[, 15]) <= CarcDaySur)
         TotDead      <- by(InfCarcasses,PopMatWB[,8],sum)
         TotDeadPixel <- by(InfCarcasses,PopMatWB[,8],sum)
-        tmpConEdgs   <- WBMat[unique(PopMatWB[ ,8]),c(1, 6:13)]
+        tmpConEdgs   <- WBMat[unique(PopMatWB[ ,8]), c(1, 6:13)]
         probWGDCInf  <- 1 - (1 - WGProbInf)^NumInfPG
         ProbWGCInf   <- 1 - (1 - CarcProbInf)^TotDead
         ProbBGCInf   <- apply(tmpConEdgs,1,function(x) {
@@ -702,148 +702,6 @@ WBModel <- function( MaxIterations    = 100,
               PopMatWB[NewInfPG, 15] <- PopMatWB[NewInfPG, 14] + round(rpert(length(NewInfPG), 1, 5, 7))# the rpert is estimated from Olsen et al. (2017) using rnorm(1000,5,0.3)
             }
           }
-    
-  ############### This is now included in the previous lines of code. 
-  ## Susceptible individuals are automatically subjected to infectious pressure 
-  ## Bot from their group and their neighbors. 
-          
-          ## B - Infection of neighboring susceptible groups. 
-          ## Here we model the susceptible groups that are around infectious herd i, but we also take into
-          ## account that the susceptible herd could have risk from other infectious herds 
-          ## Or carcasses around it or a carcass in its own pixel
-          
-        #   GroupsAtRisk <- PopMatWB[(PopMatWB[ ,8] %in% tmpConEdgs & !PopMatWB[ ,2] %in% infGroups), 2]
-        #   GroupsAtRisk <- unique(GroupsAtRisk[GroupsAtRisk > 0])
-        #   if(length(GroupsAtRisk) > 0){
-        #     PixelsAtRisk <- unique(PopMatWB[PopMatWB[ ,2] %in% GroupsAtRisk, 8])
-        #     # NumInfAtRisk <- sapply(PixelsAtRisk, function(x) {
-        #     #   tmp1 <- c(unlist(WBMat[x, 6:13]), x) # include the possibility of an infected carcass in the pixel from another group
-        #     #   tmp2 <- PopMatWB[ ,8] %in% tmp1
-        #     #   sum(tmp2 & (PopMatWB[ ,9] == 2 |(PopMatWB[ ,9] == 3 & gTime <= PopMatWB[ ,15])))
-        #     #   }
-        #     #   )
-        #     NumInfAtRisk<-sum(PopMatWB[ ,2] == i & (PopMatWB[ ,9] == 2 |(PopMatWB[ ,9] == 3 & gTime <= PopMatWB[ ,15])))
-        #       ProbInfGAR   <- 1 - (1 - CarcProbInf)^NumInfAtRisk
-        #       IndexToSelect_S= which(PopMatWB[ ,9] == 0 & PopMatWB[ ,2] %in% GroupsAtRisk)
-        #       IndexToSelect_I=IndexToSelect_S[runif(length(IndexToSelect_S))<ProbInfGAR]
-        # 
-        #       # StatusGAR    <- GroupsAtRisk[rbinom(length(GroupsAtRisk), 1, ProbInfGAR) == 1]
-        #       # if(length(StatusGAR) > 0){
-        #       #   NumAnimPGAR <- sapply(StatusGAR, function(x) sum(PopMatWB[ ,2] == x))
-        #       #   NumInfAnim  <- round(runif(length(StatusGAR), 1, 3))
-        #       #   NumInfAnim[NumInfAnim > NumAnimPGAR] <- 1
-        #       #   for(ss in 1:length(IndexToSelect_I)){
-        #       #     IndexToSelect1 <- which(PopMatWB[ ,2] == StatusGAR[ss])
-        #       #     if(NumAnimPGAR[ss] > NumInfAnim[ss]) IndexToSelect2 <- sample(IndexToSelect1, NumInfAnim[ss]) else IndexToSelect2 <- IndexToSelect1
-        #           PopMatWB[IndexToSelect_I,  9] <- 1
-        #           PopMatWB[IndexToSelect_I, 14] <- gTime + round(rpert(length(IndexToSelect_I), 1, 5, 9))  # the rpert is estimated from Olsen et al. (2017) using rnorm(1000,5.3,1.3)
-        #           PopMatWB[IndexToSelect_I, 15] <- PopMatWB[IndexToSelect_I, 14] + 
-        #                                             round(rpert(length(IndexToSelect_I), 1, 5, 7))
-        #           # the rpert is estimated from Olsen et al. (2017) using rnorm(1000,5,0.3)
-        #           
-        #         
-        #       
-        #     
-        #   }
-        # }
-            
-            ## C - Groups that can be infected via carcass, while moving.
-            ## C.1 - First male groups can be infected while moving (if susceptible) or infect others (if infectious)
-        
-          #   GroupsSplit    <- as.numeric(names(MovedPixMale))
-          #   if(length(GroupsSplit) > 0){
-          #     MovedGroups    <- unname(unlist(lapply(MovedPixMale, function(x)length(x) > 1)))
-          #     MovedGroupsTod <- GroupsSplit[MovedGroups]
-          #     if(length(MovedGroupsTod) > 0){
-          #       SusMovMalG     <- sapply(MovedGroupsTod,function(x) all(PopMatWB[ ,9] == 0 & PopMatWB[,2] == x & PopMatWB[ ,12] == 1))
-          #       SusMaleGroups  <- MovedGroupsTod[SusMovMalG]
-          #       if(length(SusMaleGroups)>0){
-          #         for(i in SusMaleGroups){
-          #           tmp <- unname(unlist(MovedPixMale[names(MovedPixMale)==i]))
-          #           tmp <- tmp[tmp>0]
-          #           ## pixels that have carcasses
-          #           AnyInfPopInPix <- tmp[sapply(tmp,function(x) any(PopMatWB[,8]%in%x & PopMatWB[,9]%in%3))] 
-          #           if(length(AnyInfPopInPix)>0){
-          #             ## number of carcasses per pixel
-          #             NumCarPP     <- sapply(AnyInfPopInPix,function(x) sum(PopMatWB[,8]%in%x & PopMatWB[,9]==3) )
-          #             probInfSplit <- 1-(1-CarcProbInf)^sum(NumCarPP)
-          #             NewInfSG     <- rbinom(1,1,probInfSplit)
-          #             if(NewInfSG==1){
-          #               SusAnimal   <- which(PopMatWB[,2]==i & PopMatWB[,12]==1)
-          #               NumInfAnim  <- round(runif(1,1,3))
-          #               NumInfAnim[NumInfAnim>length(SusAnimal)] <- SusAnimal
-          #               if(SusAnimal > NumInfAnim) IndexToSelect3 <- sample(SusAnimal,NumInfAnim) 
-          #               else IndexToSelect3 <- SusAnimal
-          #               PopMatWB[IndexToSelect3,9]  <- 1
-          #               PopMatWB[IndexToSelect3,14] <- gTime + round(rpert(length(IndexToSelect3),1,5,9))  # the rpert is estimated from Olsen et al. (2017) using rnorm(1000,5.3,1.3)
-          #               PopMatWB[IndexToSelect3,15] <- PopMatWB[IndexToSelect3,14] + round(rpert(length(IndexToSelect3),1,5,7))# the rpert is estimated from Olsen et al. (2017) using rnorm(1000,5,0.3)
-          #             }
-          #           }
-          #         }
-          #       }
-          #     }
-          #   }
-          # 
-          #   ## C.2 - Female Groups that can be infected while splitting 
-          #   GroupsSplit <- as.numeric(names(PixelsMoved))
-          #   if(length(GroupsSplit) > 0){
-          #     MovedGroups    <- unname(unlist(lapply(PixelsMoved, function(x) length(x) > 1)))
-          #     MovedGroupsTod <- GroupsSplit[MovedGroups]
-          #     if(length(MovedGroupsTod) > 0){
-          #       SusMovFMalG    <- sapply(MovedGroupsTod,function(x) all(PopMatWB[ ,9] == 0 &
-          #                                                               PopMatWB[ ,2] == x & 
-          #                                                               PopMatWB[ ,10] == 1))
-          #       SusFemaleGroups<- MovedGroupsTod[SusMovFMalG]
-          #       if(length(SusFemaleGroups) > 0){
-          #         for(i in SusFemaleGroups){
-          #           tmp <- unname(unlist(PixelsMoved[names(PixelsMoved) == i]))
-          #           tmp <- tmp[tmp > 0]
-          #           ## pixels that have carcasses
-          #           AnyInfPopInPix <- tmp[sapply(tmp, function(x) any(PopMatWB[ ,8] %in% x & PopMatWB[ ,9] %in% 3))] 
-          #           if(length(AnyInfPopInPix) > 0){
-          #             ## number of carcasses per pixel
-          #             NumCarPP     <- sapply(AnyInfPopInPix, function(x) sum(PopMatWB[ ,8] %in% x & PopMatWB[,9] == 3) )
-          #             probInfSplit <- 1 - (1 - CarcProbInf)^sum(NumCarPP)
-          #             NewInfSG     <- rbinom(1, 1, probInfSplit)
-          #             if(NewInfSG == 1){
-          #               SusAnimal   <- which(PopMatWB[ ,2] == i & PopMatWB[ ,10] == 1)
-          #               NumInfAnim  <- round(runif(1, 1, 3))
-          #               NumInfAnim[NumInfAnim > length(SusAnimal)] <- SusAnimal
-          #               if(SusAnimal > NumInfAnim) IndexToSelect3 <- sample(SusAnimal, NumInfAnim) 
-          #               else  IndexToSelect3 <- SusAnimal
-          #               PopMatWB[IndexToSelect3, 9]  <- 1
-          #               PopMatWB[IndexToSelect3, 14] <- gTime + round(rpert(length(IndexToSelect3), 1, 5, 9))  # the rpert is estimated from Olsen et al. (2017) using rnorm(1000,5.3,1.3)
-          #               PopMatWB[IndexToSelect3, 15] <- PopMatWB[IndexToSelect3, 14] + round(rpert(length(IndexToSelect3), 1, 5, 7))# the rpert is estimated from Olsen et al. (2017) using rnorm(1000,5,0.3)
-          #             }
-          #           }
-          #         } 
-          #       }
-          #     }
-          #   }
-          #   
-          #   ## D - Groups that moved due to hunting that can be infected
-          # if( any(PixelsMovedHS[[1]] > 0)) {
-          #   PixelsMovedHS<-lapply(PixelsMovedHS,function(x) x[-1])
-          #   for (i in 1:length(PixelsMovedHS)){
-          #     for (k in 1:length(PixelsMovedHS[[i]])){
-          #      PopMovedHS <- which(PopMatWB$Group_ID %in% as.numeric(names(PixelsMovedHS)[i]) &
-          #                         PopMatWB$Infect_status==0)
-          #      if (length(PopMovedHS)>0){
-          #      ProbInf<-ProbWGInf[as.character(PixelsMovedHS[[i]][k])]
-          #      NewInfHS<-NULL
-          #      if (!is.na(ProbInf)){ 
-          #        NewInfHS=PopMovedHS[runif(length(PopMovedHS))<ProbInf]  
-          #        }
-          #      if (length(NewInfHS)>0){
-          #        PopMatWB[NewInfHS, 9]  <- 1
-          #        PopMatWB[NewInfHS, 14] <- gTime + round(rpert(length(NewInfHS), 1, 5, 9))  # the rpert is estimated from Olsen et al. (2017) using rnorm(1000,5.3,1.3)
-          #        PopMatWB[NewInfHS, 15] <- PopMatWB[NewInfHS, 14] + round(rpert(length(NewInfHS), 1, 5, 7))
-          #      }
-          #     }
-          #     }
-          #   }
-          #   
-            
 
 # Update ------------------------------------------------------------------
             
