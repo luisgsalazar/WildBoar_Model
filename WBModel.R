@@ -67,15 +67,16 @@ WBModel <- function( MaxIterations    = 100,
                      
                      #Input and ID
                      
-                     FileWildBoarMat   = "dep64.csv",
-                     runID             = paste0("WB_Model", "_Dep64_"),
-                     nbcores           = 2
+                     FileWildBoarMat   = "Inputs/EA9.csv",
+                     runID             = paste0("WB_Model", "_FraBel_"),
+                     nbcores           = 2,
+                     savingpath        = "//splffiler/ueqac/Luis/Model/GIT/WildBoar_Model/Outputs"
 ){
   
   #Source Initialization (Wild boar matrix) and Animal Processes (Ageing and natural mortality)
   
-  source("//splffiler/ueqac/Luis/Model/GIT/Initialization.R")
-  source("//splffiler/ueqac/Luis/Model/GIT/AnimalProcesses.R")
+  source("//splffiler/ueqac/Luis/Model/GIT/WildBoar_Model/Initialization.R")
+  source("//splffiler/ueqac/Luis/Model/GIT/WildBoar_Model/AnimalProcesses.R")
 
 # Raster  and Distance Definition -----------------------------------------
  
@@ -112,8 +113,8 @@ WBModel <- function( MaxIterations    = 100,
   clusterEvalQ(cl1, library("flux", "dplyr"))
   res = foreach (Iter = 1:MaxIterations) %dopar% {
     
-    source("//splffiler/ueqac/Luis/Script_12-02-21/Dep64/Initialization.R")
-    source("//splffiler/ueqac/Luis/Script_12-02-21/Dep64/AnimalProcesses.R")
+    source("//splffiler/ueqac/Luis/Model/GIT/WildBoar_Model/Initialization.R")
+    source("//splffiler/ueqac/Luis/Model/GIT/WildBoar_Model/AnimalProcesses.R")
     set.seed(Iter)
     
     # Model Outcomes ----------------------------------------------------------
@@ -763,8 +764,7 @@ WBModel <- function( MaxIterations    = 100,
       
       
       ### REINITIATE & SUMMARISE
-      
-      
+    
       ## Here re-initiate the daily matrix for males and females movements to make sure that there is no bleed from previous days
       MovedPixMale  <- as.list(matrix(0, ncol = 1))
       PixelsMoved   <- as.list(matrix(0, ncol = 1))
@@ -832,6 +832,6 @@ WBModel <- function( MaxIterations    = 100,
   } #Close for(Iter in...)
   
   parallel::stopCluster(cl1)
-  save(res, file = paste0(runID, '.RData'))
+  save(res, file =  paste0(savingpath, runID, '.RData'))
 }
  
