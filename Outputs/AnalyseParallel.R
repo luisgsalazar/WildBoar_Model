@@ -1,21 +1,28 @@
 
-Scenario = 1:4
-#par(mfrow = c(2, 1))
+Scenario = 1:2
+par(mfrow = c(2, 1))
 
-#
 library(rgeos)
 library(magrittr)
 library(ggplot2)
+library(ggpubr)
 library(dplyr)
 library(reshape2)
+library(survival)
 
-OutPutGraph <- NULL
-
-Scenario = 1:2
+ScenarioTable <- NULL
+OutPutGraph   <- NULL
 
 for (Scen in Scenario) {
   if(Scenario %in% c(1:2)) load("X:/Luis/Model/GIT/WildBoar_Model/Inputs/habitats_Dep64.RData") else
   load("X:/Luis/Model/GIT/WildBoar_Model/Inputs/habitats_EA9.RData")
+  
+  #Study Area
+  if(Scenario %in% c(1:2)) Study_Area = "Department_64" else 
+                           Study_Area = "France-Belgium_Border"
+  
+  #Details
+  if(Scenario %in% c(1, 3)) Details = "Without Hunting" else Details = "Hunting Season"
 
   #Surface in km2
   gArea(habitats)/1e6 -> surface
@@ -37,20 +44,19 @@ for (Scen in Scenario) {
   ### Extract Results from main list
   apply(res_dayout, 2, identity) -> z
   
-  Population      <- do.call(cbind, z$DayOutAniMat)
-  Population      <- Population %>% data.frame
-  Population$Time <- seq(nrow(Population))
-  Population      <- melt(Population, id = "Time")
+  Population <- do.call(cbind, z$DayOutAniMat)
+  Population <- Population %>% data.frame %>% mutate(Time = seq(nrow(Population)))
+  Population <- melt(Population, id = "Time")
   
-  Infected      <- do.call(cbind, z$DayOutInfMat)
-  Infected      <- Infected %>% data.frame
-  Infected$Time <- seq(nrow(Infected))
-  Infected      <- melt(Infected, id = "Time")
+  Density    <- Population %>% mutate(density = value/surface)
   
-  Carcasses      <- do.call(cbind, z$DayOutCarcMat)
-  Carcasses      <- Carcasses %>% data.frame
-  Carcasses$Time <- seq(nrow(Carcasses))
-  Carcasses      <- melt(Carcasses, id = "Time")
+  Infected   <- do.call(cbind, z$DayOutInfMat)
+  Infected   <- Infected %>% data.frame %>% mutate(Time = seq(nrow(Infected)))
+  Infected   <- melt(Infected, id = "Time")
+  
+  Carcasses  <- do.call(cbind, z$DayOutCarcMat)
+  Carcasses  <- Carcasses %>% data.frame %>% mutate(Time = seq(nrow(Carcasses)))
+  Carcasses  <- melt(Carcasses, id = "Time")
   
   apply(res_newinf, 2, function(x) do.call(rbind, x)) -> z
   InfPerCells <- z$InfectedPerCells
@@ -62,43 +68,48 @@ for (Scen in Scenario) {
   }) %>% do.call(rbind,.)
 
  PPopulation <- ggplot(Population, aes(x = Time, y = value, color = variable)) +
-                        ggplot2::ggtitle(label = paste0("Scenario_", Scen), subtitle = "Population") + 
-                        geom_line()
+                        ggtitle(label = Study_Area, subtitle = paste("Population", Details)) + 
+                        geom_line() + theme(legend.position = "none")
  
- PDensity <- "Do the same stuff but before mutate the density"
+ PDensity  <- ggplot(Density, aes(x = Time, y = density, color = variable)) +
+              ggtitle(label = Study_Area, subtitle = paste("WB Density", Details)) +
+              geom_line() + theme(legend.position = "none")
  
  PInfected <- ggplot(Infected, aes(x = Time, y = value, color = variable)) +
-              ggtitle(label = paste0("Scenario_", Scen), subtitle = 'Infected WB') +
-              geom_line()
+              ggtitle(label = Study_Area, subtitle = paste("Infected WB", Details)) +
+              geom_line() + theme(legend.position = "none")
  
  PCarcass <- ggplot(Carcasses, aes(x = Time, y = value, color = variable)) +
-             ggtitle(label = paste0("Scenario_", Scen), subtitle = 'Infected Carcasses') +
-             geom_line()
+             ggtitle(label = Study_Area, subtitle = paste("Infected Carcass", Details)) +
+             geom_line() + theme(legend.position = "none")
+ 
+ #nameED        <- paste0("ED", Scen)
+ ScenarioTable <- rbind(ScenarioTable, c(Scenario   = Scen,
+                                         Study_Area = Study_Area,
+                                         Details    = Details))
+ 
+ OutPutGraph[[Scen]] <- list(PPopulation, PDensity, PInfected, PCarcass)
    
 }
-# plot(population[ ,1]/surface, typ = "l", main = paste0("Scenario_", Scen), xlab = "Days", ylab = "Wildboar Denisty/ km2", ylim = c(0, 5))
-# apply(population[ ,2:99]/surface, 2, lines , col = rainbow(99))
 
 # plot(c(0, 3000), c(0, 250), main = paste0("Scenario_", Scen), typ = 'n', xlab = "Days", ylab = "Incidence")
 # NewInfAnimals <- res_newinf[ ,'NewInfAnimals']
 # lapply(NewInfAnimals, function(x) lines(unique(x[ ,2]), table(x[ ,2]), col = rainbow(100)))
 
-OutPutGraph[[Scen]] <- list(PPolutation, PDensity, PInfected, PCarcass, PIncidence)
 
-
-# [[Scenario]][[Graph]]
-OutPutGraph[[2]][[1]]
-
+# OutPutGraph[[Scenario]][Graph]
 # Plot all Graphs per Scenario
-plot_grid(OutPutGraph[[2]], tags = TRUE)
 
-# ggplot(population2, aes(x=time, y=value, color= variable))+
-#   title(main=paste0("Scenario_", Scen)) +
-#   geom_line()
+PP1 <- PPopulation
 
-library(survival)
-S<-Surv(EpiDuration[,2],event=rep(1,100))
-plot(survfit(S~1))
+ggarrange(PP1, PP2 + rremove("x.text"), 
+          ncol = 1, nrow = 1)
+
+
+OutPutGraph[[1]][[1]]
+
+# S<-Surv(EpiDuration[ ,2],event = rep(1, 100))
+# plot(survfit(S ~ 1))
 
 ED1 <- as.data.frame(EpiDuration) %>% mutate(Scenario = 1) %>% rename(Iter = V1, EpDuration = V2)
 ED2 <- as.data.frame(EpiDuration) %>% mutate(Scenario = 2) %>% rename(Iter = V1, EpDuration = V2)

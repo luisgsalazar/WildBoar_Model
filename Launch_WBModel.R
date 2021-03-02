@@ -25,7 +25,7 @@ for (Scen in Scenarios$Sc) {
   path = paste("//splffiler/ueqac/Luis/Model/GIT/WildBoar_Model/Outputs/Scenario", Scen, sep = '_')
 if  (!dir.exists(path))  dir.create(paste0("Scenario", Scen, sep = "_"))
 
-MaxIterations = 10
+MaxIterations = 100
 ProbHarvest   = Scenarios[Scenarios$Sc == Scen, "ProbHarvest"]
 ProbHarvestAM = Scenarios[Scenarios$Sc == Scen, "ProbHarvestAM"]
 ProbMovHunt   = Scenarios[Scenarios$Sc == Scen, "ProbMovHunt"]
