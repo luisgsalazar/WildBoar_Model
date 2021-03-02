@@ -1,7 +1,3 @@
-
-Scenario = 1:2
-par(mfrow = c(2, 1))
-
 library(rgeos)
 library(magrittr)
 library(ggplot2)
@@ -10,6 +6,9 @@ library(dplyr)
 library(reshape2)
 library(survival)
 
+
+Scenario = 1:2
+# par(mfrow = c(2, 1))
 ScenarioTable <- NULL
 OutPutGraph   <- NULL
 
@@ -92,30 +91,24 @@ for (Scen in Scenario) {
    
 }
 
-# plot(c(0, 3000), c(0, 250), main = paste0("Scenario_", Scen), typ = 'n', xlab = "Days", ylab = "Incidence")
-# NewInfAnimals <- res_newinf[ ,'NewInfAnimals']
-# lapply(NewInfAnimals, function(x) lines(unique(x[ ,2]), table(x[ ,2]), col = rainbow(100)))
-
-
 # OutPutGraph[[Scenario]][Graph]
 # Plot all Graphs per Scenario
 
-PP1 <- PPopulation
-
-ggarrange(PP1, PP2 + rremove("x.text"), 
-          ncol = 1, nrow = 1)
-
-
 OutPutGraph[[1]][[1]]
 
+
+# Survival Plot
 # S<-Surv(EpiDuration[ ,2],event = rep(1, 100))
 # plot(survfit(S ~ 1))
 
 ED1 <- as.data.frame(EpiDuration) %>% mutate(Scenario = 1) %>% rename(Iter = V1, EpDuration = V2)
 ED2 <- as.data.frame(EpiDuration) %>% mutate(Scenario = 2) %>% rename(Iter = V1, EpDuration = V2)
+ED3 <- as.data.frame(EpiDuration) %>% mutate(Scenario = 3) %>% rename(Iter = V1, EpDuration = V2)
+ED4 <- as.data.frame(EpiDuration) %>% mutate(Scenario = 4) %>% rename(Iter = V1, EpDuration = V2)
 
-EDT <- bind_rows(ED1, ED2)
-survfit(Surv(EDT[ ,"EpDuration"], event = rep(1, 200)) ~Scenario, data = EDT) -> a
-plot(a, col = 1:2)
-legend('topright', legend = levels(factor(EDT$Scenario)), lty = 1, col = 1:2)
+EDT <- bind_rows(ED1, ED2, ED3, ED4)
+
+survfit(Surv(EDT[ ,"EpDuration"], event = rep(1, 400)) ~Scenario, data = EDT) -> a
+plot(a, col = 1:4)
+legend('topright', legend = levels(factor(EDT$Scenario)), lty = 1, col = 1:4)
 
