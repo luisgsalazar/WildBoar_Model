@@ -68,9 +68,9 @@ WBModel <- function( MaxIterations    = 100,
                      #Input and ID
                      
                      FileWildBoarMat   = "Inputs/EA9.csv",
-                     runID             = paste0("WB_Model", "_FraBel_"),
+                     runID             = paste0("WB_Model", "_FraBel"),
                      nbcores           = 2,
-                     savingpath        = "//splffiler/ueqac/Luis/Model/GIT/WildBoar_Model/Outputs"
+                     savingpath        = "//splffiler/ueqac/Luis/Model/GIT/WildBoar_Model/Outputs/"
 ){
   
   #Source Initialization (Wild boar matrix) and Animal Processes (Ageing and natural mortality)

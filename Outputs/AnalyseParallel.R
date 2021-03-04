@@ -7,21 +7,21 @@ library(reshape2)
 library(survival)
 
 
-Scenario = 1:2
+Scenario = 1:4
 # par(mfrow = c(2, 1))
 ScenarioTable <- NULL
 OutPutGraph   <- NULL
 
 for (Scen in Scenario) {
-  if(Scenario %in% c(1:2)) load("X:/Luis/Model/GIT/WildBoar_Model/Inputs/habitats_Dep64.RData") else
+  if(Scen %in% c(1:2)) load("X:/Luis/Model/GIT/WildBoar_Model/Inputs/habitats_Dep64.RData") else
   load("X:/Luis/Model/GIT/WildBoar_Model/Inputs/habitats_EA9.RData")
   
   #Study Area
-  if(Scenario %in% c(1:2)) Study_Area = "Department_64" else 
+  if(Scen %in% c(1:2)) Study_Area = "Department_64" else 
                            Study_Area = "France-Belgium_Border"
   
   #Details
-  if(Scenario %in% c(1, 3)) Details = "Without Hunting" else Details = "Hunting Season"
+  if(Scen %in% c(1, 3)) Details = "Without Hunting" else Details = "Hunting Season"
 
   #Surface in km2
   gArea(habitats)/1e6 -> surface
@@ -94,7 +94,7 @@ for (Scen in Scenario) {
 # OutPutGraph[[Scenario]][Graph]
 # Plot all Graphs per Scenario
 
-OutPutGraph[[1]][[1]]
+OutPutGraph[[3]][[4]]
 
 
 # Survival Plot

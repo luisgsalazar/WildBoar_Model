@@ -22,20 +22,22 @@ Scenarios <- data.frame(Sc = c(3:4),
 t0 <- Sys.time()
 
 for (Scen in Scenarios$Sc) {
-  path = paste("//splffiler/ueqac/Luis/Model/GIT/WildBoar_Model/Outputs/Scenario", Scen, sep = '_')
-if  (!dir.exists(path))  dir.create(paste0("Scenario", Scen, sep = "_"))
+  savingpath = paste0("//splffiler/ueqac/Luis/Model/GIT/WildBoar_Model/Outputs/Scenario_", Scen,'/')
+if  (!dir.exists(savingpath)){
+  dir.create(savingpath)
+  }
 
-MaxIterations = 100
+MaxIterations = 2
 ProbHarvest   = Scenarios[Scenarios$Sc == Scen, "ProbHarvest"]
 ProbHarvestAM = Scenarios[Scenarios$Sc == Scen, "ProbHarvestAM"]
 ProbMovHunt   = Scenarios[Scenarios$Sc == Scen, "ProbMovHunt"]
-nbcores       = 34
+nbcores       = 2
 
 WBModel(MaxIterations    = MaxIterations, 
                              ProbHarvest     = ProbHarvest,
                              ProbHarvestAM   = ProbHarvestAM,
                              ProbMovHunt     = ProbMovHunt,
-                             savingpath      = path
+                             savingpath      = savingpath
                              )
  }
 
