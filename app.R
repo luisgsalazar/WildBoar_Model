@@ -15,6 +15,7 @@ library(maptools)
 library(sp)
 library(rgeos)
 library(viridis)
+
 file="Essai"
 # source('Modele non parallelise©_MA_map.R', encoding = 'UTF-8')
 # source("carteinteractive.R")
