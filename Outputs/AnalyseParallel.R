@@ -70,9 +70,17 @@ for (Scen in Scenario) {
                         ggtitle(label = Study_Area, subtitle = paste("Population", Details)) + 
                         geom_line() + theme(legend.position = "none")
  
- PDensity  <- ggplot(Density, aes(x = Time, y = density, color = variable)) +
+ PDensity  <- ggplot(data = Density, aes(x = Time, y = density, color = variable)) +
               ggtitle(label = Study_Area, subtitle = paste("WB Density", Details)) +
-              geom_line() + theme(legend.position = "none")
+              geom_line() + geom_ribbon() + theme(legend.position = "none")
+ 
+ summary(Population)
+ Plotq <- quantile(fla, c(0.10, 0.25, 0.50, 0.75, 0.90))
+  
+ PTest   <- ggplot(data = Population, aes(x = Time, y = value)) +
+   geom_ribbon(aes(x = Time, ymin = 3896, ymax = 20576), fill = "red", alpha = .15) +
+   geom_ribbon(aes(x = Time, ymin = 7582, ymax = 16596), fill = "red", alpha = .25) +
+   geom_line() + ylab("density")
  
  PInfected <- ggplot(Infected, aes(x = Time, y = value, color = variable)) +
               ggtitle(label = Study_Area, subtitle = paste("Infected WB", Details)) +
