@@ -16,11 +16,12 @@ library(sp)
 library(rgeos)
 library(viridis)
 
-load("Inputs/habitats_Dep64.RData")
+#load("Inputs/habitats_Dep64.RData")
+load("Inputs/habitats_EA9.RData")
 habitats <- spTransform(habitats, CRS("+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0"))
 
 
-for (Scen in 1:1) {
+for (Scen in 3:3) {
   
   load(paste0("./Outputs/Scenario_", Scen, "/", Scen, ".RData"))
   do.call(rbind, res) -> results
@@ -38,21 +39,44 @@ ui <- fluidPage(
   titlePanel('Wild boar Model Results', windowTitle = "WB Model Results"),    
   
   hr(), 
+  
+ sidebarLayout(
+   
+  # Sidebar with a slider input
+  sidebarPanel(
     
-    # Sidebar with a slider input
-    # sidebarPanel(
-    fluidRow(
+  radioButtons(inputId = 'scenario', label = 'Department 64 / France-Belgium Border', 
+                 choices = c('Department 64', 'France-Belgium Border')),
+  
+  conditionalPanel(
+    
+    condition = "input.scenario == 'Department 64'",
+    radioButtons(inputId = 'hunting_Dep', label = "Hunting", choices = c("No Hunting", "Hunting Season"))
+    
+  ),
+  
+  conditionalPanel(
+    
+    condition = "input.scenario == 'France-Belgium Border'",
+    radioButtons(inputId = 'hunting_FB', label = "Hunting", choices = c("No Hunting", "Hunting Season"))
+    
+  ),
+    
+  fluidRow(
       sliderInput(inputId = "days", label = "days:", min = 730, max = 1850, step = 1, value = 1, animate = TRUE)
        ),
    
+ ), #Sidebar Panel
     mainPanel(
+      
         tabsetPanel(
 
-            tabPanel(title = "MapI", leafletOutput("mapI"))
+            tabPanel(title = "MapI", leafletOutput(outputId = "mapI"))
 
       )
-   )
-)
+    )
+  )#closes Sidebar layout (inside sidebar panel (where inputs are) + main panel)
+ )
 
 server <- function(input, output, session) {
   
@@ -69,16 +93,16 @@ server <- function(input, output, session) {
       day <<- input$days
 
          habitats$InfStatus <- 0
-         habitats$alpha <- 0
+         habitats$alpha     <- 0
          tmp <- subset.data.frame(InfPerCells, InfPerCells$gTime == day)
          habitats$InfStatus[match(tmp[ ,3], habitats$ID)] <- 1
-         habitats$alpha[match(tmp[ ,3], habitats$ID)] <- tmp[ ,4]/tmp[ ,5]
+         habitats$alpha[match(tmp[ ,"Cell_ID"], habitats$ID)] <- (tmp[ ,"Inf_WB"]/tmp[ ,"Pop_Cell"]*100)
          col <- rev(heat.colors(10))[c(1, 10)]
          habitats$col <- col[habitats$InfStatus + 1]
          # habitats$col[habitats$alpha>0] <- adjustcolor(habitats$col[habitats$alpha>0],
          #                                            habitats$alpha[habitats$alpha>0])
        
-         pal <- colorBin("plasma", bins = seq(0, 1, 0.1), alpha = 0.3)
+         pal <- colorBin("plasma", bins = seq(0, 100, 0.10), alpha = 0.5)
          leafletProxy("mapI") %>% addPolygons(data = habitats, color = "black",
                                               fillColor = ~pal(round(habitats$alpha, 1)),
                                               popup = paste("Infected WB:", habitats@data[ ,'alpha']), fillOpacity = 2)
