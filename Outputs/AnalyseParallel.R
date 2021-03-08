@@ -26,7 +26,7 @@ for (Scen in Scenario) {
   if(Scen %in% c(1, 3)) Details = "Without Hunting" else Details = "Hunting Season"
 
   #Surface in km2
-  gArea(habitats)/1^6 -> surface
+  gArea(habitats)/1e6 -> surface
   
   #Load Scenario List Results
   load(paste0("./Outputs/Scenario_", Scen, "/", Scen, ".RData"))
@@ -85,7 +85,7 @@ for (Scen in Scenario) {
                              fun.max = function(z) { quantile(z,0.75) },
                              fun = median, geom = "smooth", colour = "darksalmon", size = 1)
   
-     PDensity <- ggplot(Density, aes(x = Time, y = value)) +
+     PDensity <- ggplot(Density, aes(x = Time, y = density)) +
                  ggtitle(label = Study_Area, subtitle = paste("WB Density", Details)) + 
                  geom_line(colour = "cornflowerblue", alpha = 0.3) + theme(legend.position = "none") + 
                  stat_summary(fun.min = function(z) { quantile(z,0.25) },
@@ -118,7 +118,7 @@ for (Scen in Scenario) {
 # OutPutGraph[[Scenario]][Graph]
 # Plot all Graphs per Scenario
 
-OutPutGraph[[1]][[1]]
+OutPutGraph[[1]][[2]]
 
 
 
