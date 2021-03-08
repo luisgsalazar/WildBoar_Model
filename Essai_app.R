@@ -16,12 +16,12 @@ library(sp)
 library(rgeos)
 library(viridis)
 
-#load("Inputs/habitats_Dep64.RData")
-load("Inputs/habitats_EA9.RData")
+load("Inputs/habitats_Dep64.RData")
+#load("Inputs/habitats_EA9.RData")
 habitats <- spTransform(habitats, CRS("+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0"))
 
 
-for (Scen in 3:3) {
+for (Scen in 1:1) {
   
   load(paste0("./Outputs/Scenario_", Scen, "/", Scen, ".RData"))
   do.call(rbind, res) -> results
@@ -62,16 +62,18 @@ ui <- fluidPage(
     
   ),
     
-  fluidRow(
-      sliderInput(inputId = "days", label = "days:", min = 730, max = 1850, step = 1, value = 1, animate = TRUE)
-       ),
+  # fluidRow(
+  #     sliderInput(inputId = "days", label = "days:", min = 730, max = 1850, step = 1, value = 1, animate = TRUE)
+  #      ),
+  
+  uiOutput(outputId = 'DayOut')
    
  ), #Sidebar Panel
     mainPanel(
       
         tabsetPanel(
 
-            tabPanel(title = "MapI", leafletOutput(outputId = "mapI"))
+            tabPanel(title = "Infected WB Map", leafletOutput(outputId = "mapI"))
 
       )
     )
@@ -79,6 +81,12 @@ ui <- fluidPage(
  )
 
 server <- function(input, output, session) {
+  
+  output$DayOut <- renderUI({
+    
+    sliderInput(inputId = "days", label = "days:", min = 730, max = 1850, step = 1, value = 1, animate = TRUE)
+    
+  })
   
   mapI <- leaflet(habitats) %>%
     addTiles() %>% 
