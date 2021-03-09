@@ -48,19 +48,23 @@ ui <- fluidPage(
   radioButtons(inputId = 'scenario', label = 'Department 64 / France-Belgium Border', 
                  choices = c('Department 64', 'France-Belgium Border')),
   
-  conditionalPanel(
-    
-    condition = "input.scenario == 'Department 64'",
-    radioButtons(inputId = 'hunting_Dep', label = "Hunting", choices = c("No Hunting", "Hunting Season"))
-    
-  ),
+  conditionalPanel(condition = "inpute.scenario = 'Department 64'",
+                   radioButtons(inputId = 'season', label = "Season", choices = c("ASF introduction Winter", "ASF introduction Summer"))
   
-  conditionalPanel(
-    
-    condition = "input.scenario == 'France-Belgium Border'",
-    radioButtons(inputId = 'hunting_FB', label = "Hunting", choices = c("No Hunting", "Hunting Season"))
-    
   ),
+                   conditionalPanel(
+              
+              condition = "input.season == 'ASF introduction Winter'",
+              radioButtons(inputId = 'hunting_Dep', label = "Hunting", choices = c("No Hunting", "Hunting Season"))
+              
+            ),
+            
+            conditionalPanel(
+              
+              condition = "input.season == 'ASF introduction Summer'",
+              radioButtons(inputId = 'hunting_FB', label = "Hunting", choices = c("No Hunting", "Hunting Season"))
+              
+            ),
     
   # fluidRow(
   #     sliderInput(inputId = "days", label = "days:", min = 730, max = 1850, step = 1, value = 1, animate = TRUE)
