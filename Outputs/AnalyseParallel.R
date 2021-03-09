@@ -127,10 +127,10 @@ for (Scen in Scenario) {
                                          Details    = Details,
                                          Season     = Season))
  
- OutPutGraph[[Scen]] <- list(PPopulationA, PPopulation,
-                             PDensityA, PDensityQ,
-                             PInfectedA, PInfectedQ,
-                             PCarcassA, PCarcassQ,
+ OutPutGraph[[Scen]] <- list(PPopulationA, PPopulationQ,
+                             PDensityA,    PDensityQ,
+                             PInfectedA,   PInfectedQ,
+                             PCarcassA,    PCarcassQ,
                              EpiDuration)
    
 }
