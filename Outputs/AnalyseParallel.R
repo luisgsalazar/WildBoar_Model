@@ -3,8 +3,10 @@ library(magrittr)
 library(ggplot2)
 library(ggpubr)
 library(dplyr)
+library(tibble)
 library(reshape2)
 library(survival)
+
 
 
 # List of Output Graphs ---------------------------------------------------
@@ -15,8 +17,8 @@ ScenarioTable <- NULL
 OutPutGraph   <- NULL
 
 for (Scen in Scenario) {
-  if(Scen %in% c(1:2, 5:6)) load("X:/Luis/Model/GIT/WildBoar_Model/Inputs/habitats_Dep64.RData") else
-  load("X:/Luis/Model/GIT/WildBoar_Model/Inputs/habitats_EA9.RData")
+  if(Scen %in% c(1:2, 5:6)) load("Inputs/habitats_Dep64.RData") else
+  load("Inputs/habitats_EA9.RData")
   
   #Study Area
   if(Scen %in% c(1:2, 5:6)) Study_Area = "Department_64" else 
@@ -48,24 +50,37 @@ for (Scen in Scenario) {
   ### Extract Results from main list
   apply(res_dayout, 2, identity) -> z
   
-  Population  <- do.call(cbind, z$DayOutAniMat)
-  # Popquant    <- Population %>% data.frame %>% 
-  #                apply(., 1, quantile, probs = c(0.5, 0.025, 0.975)) %>% t(.)
-  # Popquant   <- Popquant %>% data.frame %>% 
-  #               add_rownames(var = "Time") %>%
-  #               rename(., Median = X50., Q2.5 = X2.5., Q97.5 = X97.5.)
-  Population <- Population %>% data.frame %>% mutate(Time = seq(nrow(Population)))
-  Population <- melt(Population, id = "Time")
-
-  Density    <- Population %>% mutate(density = value/surface)
+  # Groups     <- do.call(cbind, z$DayOutPopMat)
+  # Groupquant <- Groups %>% data.frame %>%
+  #               apply(., 1, quantile, probs = c(0.5, 0.025, 0.975)) %>% t(.)
   
-  Infected   <- do.call(cbind, z$DayOutInfMat)
-  Infected   <- Infected %>% data.frame %>% mutate(Time = seq(nrow(Infected)))
-  Infected   <- melt(Infected, id = "Time")
+  Population  <- do.call(cbind, z$DayOutAniMat)
+  Popquant    <- Population %>% data.frame %>% 
+                  apply(., 1, quantile, probs = c(0.5, 0.025, 0.975)) %>% t(.)
+  
+  Density     <- Population %>% data.frame %>% 
+                 apply(., 1, divide_by, surface) %>% t(.)
+  Denquant    <- Density %>% data.frame() %>%
+                 apply(., 1, quantile, probs = c(0.5, 0.025, 0.975)) %>% t(.)
+  
+  PopPlot <- Population %>% data.frame %>% mutate(Time = seq(nrow(Population)))
+  PopPlot <- melt(PopPlot, id = "Time")
+  
+  DenPlot <- PopPlot %>% mutate(density = value/surface)
+
+  Infected <- do.call(cbind, z$DayOutInfMat)
+  Infquant <- Infected %>% data.frame %>%
+              apply(., 1, quantile, probs = c(0.5, 0.025, 0.975)) %>% t(.)
+  
+  InfPlot   <- Infected %>% data.frame %>% mutate(Time = seq(nrow(Infected)))
+  InfPlot   <- melt(InfPlot, id = "Time")
   
   Carcasses  <- do.call(cbind, z$DayOutCarcMat)
-  Carcasses  <- Carcasses %>% data.frame %>% mutate(Time = seq(nrow(Carcasses)))
-  Carcasses  <- melt(Carcasses, id = "Time")
+  Carquant  <- Carcasses %>% data.frame %>%
+               apply(., 1, quantile, probs = c(0.5, 0.025, 0.975)) %>% t(.)
+  
+  CarPlot   <- Carcasses %>% data.frame %>% mutate(Time = seq(nrow(Carcasses)))
+  CarPlot   <- melt(CarPlot, id = "Time")
   
   apply(res_newinf, 2, function(x) do.call(rbind, x)) -> z
   InfPerCells <- z$InfectedPerCells
@@ -77,45 +92,45 @@ for (Scen in Scenario) {
     }) %>% do.call(rbind,.)
  
  ### All Iterations Graphic 
- PPopulationA <- ggplot(Population, aes(x = Time, y = value, color = variable)) +
+ PPopulationA <- ggplot(PopPlot, aes(x = Time, y = value, color = variable)) +
                 ggtitle(label = Study_Area, subtitle = paste("Population", "/", Details, "/", Season)) +
                 geom_line() + theme(legend.position = "none")
     
  ### Median and quantile plots        
- PPopulationQ <- ggplot(Population, aes(x = Time, y = value)) +
+ PPopulationQ <- ggplot(PopPlot, aes(x = Time, y = value)) +
                 ggtitle(label = Study_Area, subtitle = paste("Population", "/", Details, "/", Season)) +
                 geom_line(colour = "cornflowerblue", alpha = 0.3) + theme(legend.position = "none") +
                 stat_summary(fun.min = function(z) { quantile(z,0.25) },
                              fun.max = function(z) { quantile(z,0.75) },
                              fun = median, geom = "smooth", colour = "darksalmon", size = 1)
   
-  PDensityA <- ggplot(Density, aes(x = Time, y = density, color = variable)) +
+  PDensityA <- ggplot(DenPlot, aes(x = Time, y = density, color = variable)) +
               ggtitle(label = Study_Area, subtitle = paste("WB Density", "/", Details, "/", Season)) +
               geom_line() + theme(legend.position = "none")
 
-  PDensityQ <- ggplot(Density, aes(x = Time, y = density)) +
+  PDensityQ <- ggplot(DenPlot, aes(x = Time, y = density)) +
                  ggtitle(label = Study_Area, subtitle = paste("WB Density", "/", Details, "/", Season)) +
                  geom_line(colour = "cornflowerblue", alpha = 0.3) + theme(legend.position = "none") +
                  stat_summary(fun.min = function(z) { quantile(z,0.25) },
                               fun.max = function(z) { quantile(z,0.75) },
                               fun = median, geom = "smooth", colour = "coral", size = 1)
 
-  PInfectedA <- ggplot(Infected, aes(x = Time, y = value, color = variable)) +
+  PInfectedA <- ggplot(InfPlot, aes(x = Time, y = value, color = variable)) +
                 ggtitle(label = Study_Area, subtitle = paste("Infected WB", "/", Details, "/", Season)) +
                 geom_line() + theme(legend.position = "none")
   
-  PInfectedQ <- ggplot(Infected, aes(x = Time, y = value)) +
+  PInfectedQ <- ggplot(InfPlot, aes(x = Time, y = value)) +
                 ggtitle(label = Study_Area, subtitle = paste("Infected WB", "/", Details, "/", Season)) +
                 geom_line(colour = "cornflowerblue", alpha = 0.3) + theme(legend.position = "none") +
                 stat_summary(fun.min = function(z) { quantile(z,0.25) },
-                  fun.max = function(z) { quantile(z,0.75) },
+                  fun.max = function(z) { quantile(z, 0.75) },
                   fun = median, geom = "smooth", colour = "brown2", size = 1)
  
-  PCarcassA <- ggplot(Carcasses, aes(x = Time, y = value, color = variable)) +
+  PCarcassA <- ggplot(CarPlot, aes(x = Time, y = value, color = variable)) +
                ggtitle(label = Study_Area, subtitle = paste("Infected Carcasses", "/", Details, "/", Season)) +
                geom_line() + theme(legend.position = "none")
   
-  PCarcassQ <- ggplot(Carcasses, aes(x = Time, y = value)) +
+  PCarcassQ <- ggplot(CarPlot, aes(x = Time, y = value)) +
                ggtitle(label = Study_Area, subtitle = paste("Infected Carcasses", "/", Details, "/", Season)) +
                geom_line(colour = "cornflowerblue", alpha = 0.3) + theme(legend.position = "none") +
                stat_summary(fun.min = function(z) { quantile(z,0.25) },
@@ -125,7 +140,12 @@ for (Scen in Scenario) {
  ScenarioTable <- rbind(ScenarioTable, c(Scenario   = Scen,
                                          Study_Area = Study_Area,
                                          Details    = Details,
-                                         Season     = Season))
+                                         Season     = Season,
+                                         Population = Popquant[730, 1],
+                                         Density    = Denquant[730, 1],
+                                         Infected   = Infquant[1095, 3],
+                                         Carcasses  = Carquant[1095, 3])
+                                         )
  
  OutPutGraph[[Scen]] <- list(PPopulationA, PPopulationQ,
                              PDensityA,    PDensityQ,
@@ -137,6 +157,8 @@ for (Scen in Scenario) {
 
 # OutPutGraph[[Scenario]][Graph/Table]
 # Plot all Graphs per Scenario
+
+ScenarioTable
 
 OutPutGraph[[5]][[10]]
 
