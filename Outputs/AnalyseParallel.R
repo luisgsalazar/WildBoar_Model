@@ -7,7 +7,26 @@ library(tibble)
 library(reshape2)
 library(survival)
 
+# Scenarios ---------------------------------------------------------------
 
+### Table with Scenarios used for WBModel
+
+Scenarios <- data.frame(Scenario         = c(1:12),
+                        Zone             = rep(c(rep("Pyrenees-Atlantiques_Department", 2), 
+                                              rep("France-Belgium_border", 2)), 3),
+                        ProbHarvest      = rep(c(0, 0.40), 6),
+                        ProbHarvestAM    = rep(c(0, 0.60), 6),
+                        ProbMovHunt      = rep(c(0, 0.30), 6),
+                        GroupMoveHunt    = rep(c("No", "Yes"),6),
+                        TimeSeedInf      = c(rep(3650, 4), rep(730, 4), rep(900, 4)), #No infection/Winter/Summer
+                        MaxIterations    = c(rep(10, 4), rep(100, 8)),
+                        MaxDays          = c(rep(5*365, 4), rep(8*365, 8)),
+                        MaxBCap          = rep(8, 12),
+                        SurvivalProbAdF  = rep(0.85, 12),                   # Yearly Survival Prob for adults Kueling et al. (2013)    
+                        SurvivalProbAdM  = rep(0.75, 12),                   # Yearly Survival Prob for adults Kueling et al. (2013) 
+                        SurvivalProbSAdF = rep(0.75, 12),                   # Yearly Survival Prob for sub-adults (we use adults values as they are closer to Lange et al. 2015) Kueling et al. (2013)
+                        SurvivalProbSAdM = rep(0.70, 12)
+                        )
 
 # List of Output Graphs ---------------------------------------------------
 
