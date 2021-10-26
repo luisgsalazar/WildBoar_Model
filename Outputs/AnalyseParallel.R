@@ -1,5 +1,6 @@
 library(rgeos)
 library(magrittr)
+library(sp)
 library(ggplot2)
 library(ggpubr)
 library(dplyr)
@@ -11,6 +12,10 @@ library(gridExtra)
 library(survminer)
 
 # Scenarios ---------------------------------------------------------------
+
+#The good Outcomes are the ones inside the folders with the number of the scenarios: Scenario_1/1.RData
+#Scenarios 1-4 Infection in Winter (Day 750) and 5-8 Infection in summer (Day 900)
+#Outcomes of the population without infections are outside file
 
 ### Table with Scenarios used for WBModel
 
@@ -33,7 +38,7 @@ Scenarios <- data.frame(Scenario         = c(1:12),
 
 # List of Output Graphs ---------------------------------------------------
 
-Scenario = 1:12
+Scenario = 1:8
 #par(mfrow = c(2, 1))
 ScenarioTable <- NULL
 OutPutGraph   <- NULL
@@ -58,7 +63,8 @@ for (Scen in Scenario) {
   gArea(habitats)/1e6 -> surface
   
   #Load Scenario List Results
-  load(paste0("Outputs/scenario_", Scen, ".RData"))
+  #load(paste0("Outputs/scenario_", Scen, ".RData"))
+  load(paste0("./Outputs/Scenario_", Scen, "/", Scen, ".RData"))
   do.call(rbind, res) -> results
   
   ### Divide type of results
@@ -232,9 +238,9 @@ for (Scen in Scenario) {
 
 ScenarioTable
 
-OutPutGraph[[8]][3]
-view(OutPutGraph[[8]][[16]])
-summary(OutPutGraph[[8]][[18]])
+OutPutGraph[[2]][11]
+view(OutPutGraph[[1]][[2]])
+summary(OutPutGraph[[8]][[12]])
 
 #No Infection Results
 
