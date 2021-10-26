@@ -115,8 +115,15 @@ for (Scen in Scenarios$Sc) {
     by(InfGroups$`n()`, InfGroups$Iter, cumsum) -> tmp
     InfGroups$Infected_Cum <- do.call(what = 'c', tmp)
   CumInfGroups <- InfGroups %>% group_by(., Iter) %>% summarise(median = median(Infected_Cum)) %>% summarise(quant = quantile(median, probs = c(0.5, 0.025, 0.975)))
-    
+ 
+  InfCarcass <- z$NewInfCarcass
+  InfCarcass <- InfCarcass %>% data.frame %>% group_by(Iter, gTime) %>% summarise(n())
+  by(InfCarcass$`n()`, InfCarcass$Iter, cumsum) -> tmp
+  InfCarcass$Infected_Cum <- do.call(what = 'c', tmp)
+  CumInfCarcass <- InfCarcass %>% group_by(., Iter) %>% summarise(median = median(Infected_Cum)) %>% summarise(quant = quantile(median, probs = c(0.5, 0.025, 0.975))) 
+  
   }
+
   ### Calculate Epidemic Duration
  # EpiDuration <- lapply(res, function(x){
  #    x= x$NewInfAnimals %>% data.frame
@@ -137,6 +144,8 @@ EpiDuration   = apply(rbind(
   tapply(Carcasses$value, Carcasses$Sim, function(x) max(which(x > 0))),
   tapply(Infected$value,  Infected$Sim,  function(x) max(which(x > 0)))), 2, max) - Scenarios[Scenarios$Sc == Scen, "TimeSeedInf"]
 EpiDuration = tibble(Iter = names(EpiDuration), EpDuration = as.numeric(EpiDuration))
+
+EpiDuration <- summarise(EpiDuration, quant = quantile(EpDuration, probs = c(0.5, 0.025, 0.975)))
 
 
 # Plots -------------------------------------------------------------------
@@ -205,18 +214,26 @@ EpiDuration = tibble(Iter = names(EpiDuration), EpDuration = as.numeric(EpiDurat
  #                                         Study_Area = Study_Area,
  #                                         Details    = Details,
  #                                         Season     = Season))
- 
+ if (Scen > 4) {
+  
  OutPutGraph[[Scen]] <- list(PPopulationA, PPopulationQ, Popquant,
                              PDensityA,    PDensityQ,    Denquant,
-                             PCellsQ,      Cellsquant,   CumInfGroups,
-                             PInfectedA,   PInfectedQ,   Infquant,       CumInfAnimals,
-                             PCarcassA,    PCarcassQ,    Carquant,
-                             EpiDuration)
+                             PCellsQ,      Cellsquant,                 CumInfGroups,
+                             PInfectedA,   PInfectedQ,   Infquant,     CumInfAnimals,
+                             PCarcassA,    PCarcassQ,    Carquant,     CumInfCarcass,
+                             EpiDuration)  } else
+                    
+  OutPutGraph[[Scen]] <- list(PPopulationA, PPopulationQ, Popquant,
+                              PDensityA,    PDensityQ,    Denquant,
+                              PCellsQ,      Cellsquant,   
+                              PInfectedA,   PInfectedQ,   Infquant,    
+                              PCarcassA,    PCarcassQ,    Carquant,
+                              EpiDuration)
    
 }
 
 OutPutGraph[[5]][[11]]
-View(OutPutGraph[[7]][[6]])
+View(OutPutGraph[[5]][[12]])
 # OutPutGraph[[Scenario]][Graph/Table]
 # Plot all Graphs per Scenario
 
@@ -239,14 +256,21 @@ annotate_figure(pop,
                 top = text_grob("Population Dynamics", face = "bold", size = 16))
 
 
-grid.arrange(
-  grobs = list(OutPutGraph[[5]][[2]], OutPutGraph[[7]][[2]],
-               OutPutGraph[[5]][[6]], OutPutGraph[[7]][[6]],
-               OutPutGraph[[5]][[8]], OutPutGraph[[7]][[8]]),
-  widths = c(2, 2),
-  layout_matrix = rbind(c(1, 2),c(3, 4), c(5, 6)),
-  top = textGrob("ASF Dynamics - No Hunting", gp = gpar(fontsize = 20, font = 3))
-) 
+no_hunt <- ggarrange(OutPutGraph[[7]][[2]], OutPutGraph[[5]][[2]],
+                     OutPutGraph[[7]][[11]], OutPutGraph[[5]][[11]],
+                     OutPutGraph[[7]][[15]], OutPutGraph[[5]][[15]]
+                     + rremove("x.text"),
+                     labels = c("A", "B", "C", "D", "E", "F"), font.label = 16,
+                     ncol = 2, nrow = 3)
+annotate_figure(no_hunt, top = text_grob("ASF Dynamics - No Hunting", face = "bold", size = 16))
+
+hunt <- ggarrange(OutPutGraph[[8]][[2]], OutPutGraph[[6]][[2]],
+                  OutPutGraph[[8]][[11]], OutPutGraph[[6]][[11]],
+                  OutPutGraph[[8]][[15]], OutPutGraph[[6]][[15]]
+                          + rremove("x.text"),
+                          labels = c("A", "B", "C", "D", "E", "F"), font.label = 16,
+                          ncol = 2, nrow = 3)
+annotate_figure(no_hunt, top = text_grob("ASF Dynamics - Hunting Season", face = "bold", size = 16))
 
 grid.arrange(
   grobs = list(OutPutGraph[[6]][[2]], OutPutGraph[[8]][[2]],
