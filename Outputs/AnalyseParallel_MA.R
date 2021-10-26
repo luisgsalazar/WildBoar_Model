@@ -30,6 +30,10 @@ Scenarios <- data.frame(Sc               = c(1:8),
                         
 )
 
+
+# Data extract ------------------------------------------------------------
+
+
 for (Scen in Scenarios$Sc) {
   index_Dep64 = c(1:2, 5:6, 9:10)
   if(Scen %in% index_Dep64) load("Inputs/habitats_Dep64.RData") else
@@ -100,19 +104,28 @@ for (Scen in Scenarios$Sc) {
   apply(res_newinf, 2, function(x) do.call(rbind, x)) -> z
   InfPerCells <- z$InfectedPerCells
   
+  InfAnimals <- z$NewInfAnimals
+  InfAnimals <- InfAnimals %>% data.frame %>% group_by(Iter, gTime) %>% summarise(n())
+  by(InfAnimals$`n()`, InfAnimals$Iter, cumsum) -> tmp
+  InfAnimals$Infected_Cum <- do.call(what = 'c', tmp)
+  CumInfAnimals <- InfAnimals %>% group_by(., Iter) %>% summarise(median = median(Infected_Cum)) %>% summarise(quant = quantile(median, probs = c(0.5, 0.025, 0.975)))
+  
   InfGroups <- z$NewInfGroups
-  InfGroups <- InfGroups %>% data.frame %>% group_by(Iter, gTime) %>% 
-    dplyr::summarise(n())
+  InfGroups <- InfGroups %>% data.frame %>% group_by(Iter, gTime) %>% summarise(n())
     by(InfGroups$`n()`, InfGroups$Iter, cumsum) -> tmp
     InfGroups$Infected_Cum <- do.call(what = 'c', tmp)
+  CumInfGroups <- InfGroups %>% group_by(., Iter) %>% summarise(median = median(Infected_Cum)) %>% summarise(quant = quantile(median, probs = c(0.5, 0.025, 0.975)))
     
-  InfGroups <- apply(InfGroups, 2, quantile, probs = c(0.5, 0.025, 0.975))
   }
   ### Calculate Epidemic Duration
  # EpiDuration <- lapply(res, function(x){
  #    x= x$NewInfAnimals %>% data.frame
  #    c(unique(x$Iter), max(x$gTime) - Scenarios[Scenarios$Sc==Scen,"TimeSeedInf"])
  #    }) %>% do.call(rbind,.)
+
+
+# Epidemic Duration -------------------------------------------------------
+
   
  Sim = NULL
  
@@ -124,6 +137,10 @@ EpiDuration   = apply(rbind(
   tapply(Carcasses$value, Carcasses$Sim, function(x) max(which(x > 0))),
   tapply(Infected$value,  Infected$Sim,  function(x) max(which(x > 0)))), 2, max) - Scenarios[Scenarios$Sc == Scen, "TimeSeedInf"]
 EpiDuration = tibble(Iter = names(EpiDuration), EpDuration = as.numeric(EpiDuration))
+
+
+# Plots -------------------------------------------------------------------
+
 
  ### All Iterations Graphic 
  PPopulationA <- ggplot(Population, aes(x = Time, y = value, color = variable)) +
@@ -191,8 +208,8 @@ EpiDuration = tibble(Iter = names(EpiDuration), EpDuration = as.numeric(EpiDurat
  
  OutPutGraph[[Scen]] <- list(PPopulationA, PPopulationQ, Popquant,
                              PDensityA,    PDensityQ,    Denquant,
-                             PCellsQ,      Cellsquant,
-                             PInfectedA,   PInfectedQ,   Infquant,
+                             PCellsQ,      Cellsquant,   CumInfGroups,
+                             PInfectedA,   PInfectedQ,   Infquant,       CumInfAnimals,
                              PCarcassA,    PCarcassQ,    Carquant,
                              EpiDuration)
    
